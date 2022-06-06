@@ -15,23 +15,36 @@ class GaloisField: #Will represent finite fields (Z/p)[x]/f(x) (polynomials with
         raise ValueError("the alpha and prim_poly arguments are not compatible")
       self.expLUT[i] = self.expLUT[i+(self.size-1)] = a #we build two identical tables in the same list with offset self.size-1 to avoid having to use modulo in the future
       self.logLUT[a] = i
-      a = self.standard_mul(a, self.alpha) #αi = α(i-1)*α with α0 = 1 (1 -> α -> α^2 -> α^3...)
+      a = self.standard_mul(a, self.alpha) #α_i = α_(i-1)*α with α_0 = 1 | (1 -> α -> α^2 -> α^3...)
 
   def add(self, x, y):
-    return x ^ y #assuming we are working with GF(2^n) (addition of polynomials works by adding coefficients with same degree (meaning no carry) and working in Z/2 is the same as modulo 2)
+    if self.prime == 2:
+      return x ^ y #assuming we are working with GF(2^n) (addition of polynomials works by adding coefficients with same degree (meaning no carry) and working in Z/2 is the same as modulo 2)
+
+    # new_x, new_y = [], []
+    # while x > 0 or y > 0:
+    #   x_digit = x % self.prime
+    #   y_digit = y % self.prime
+    #   if x_digit:
+    #     new_x.append(x_digit)
+    #   if y_digit:
+    #     new_y.append(y_digit)
+    # new_x = new_x[::-1]
+    # new_y = new_y[::-1]
 
   def sub(self, x, y):
-    return x ^ y #assuming we are working with GF(2^n) subtraction is the same as addition
+    if self.prime == 2:
+      return x ^ y #assuming we are working with GF(2^n) subtraction is the same as addition
 
   def standard_mul(self, x, y):
     result = 0
     while y > 0:
       if y & 1: #if y is odd
-        result ^= x
+        result = self.add(result, x)
       x <<= 1 #same as 2x
       y >>= 1 #same as y//2 (right shift drops the last bit)
       if x & self.size: #same as x > self.size-1 (self.size-1 indicates the maximum value that can exist in the field)
-        x ^= self.prim_poly #if x gets larger than 255 (assuming GF(2^8)) it means the polynomial it represents is degree 8 or higher and must be reduced by our primitive polynomial
+        x = self.add(x, self.prim_poly) #if x gets larger than 255 (assuming GF(2^8)) it means the polynomial it represents is degree 8 or higher and must be reduced by our primitive polynomial
     return result
 
   def mul(self, x, y):
@@ -44,4 +57,4 @@ class GaloisField: #Will represent finite fields (Z/p)[x]/f(x) (polynomials with
       raise ZeroDivisionError("cannot divide by zero")
     if x == 0: #zero divided by something
       return 0
-    return self.expLUT[self.logLUT[x] - self.logLUT[y]] #x/y can be written as α^n/α^m = α^(n-m), where n and m are their log values
+    return self.expLUT[self.logLUT[x] - self.logLUT[y]] #x/y can be written as α^n/α^m = α^(n-m), where n and m are their log value
