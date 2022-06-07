@@ -6,6 +6,7 @@ class GaloisField: #Will represent finite fields (Z/p)[x]/f(x) (polynomials with
     self.prim_poly = prim_poly #an irreducible primitive polynomial with which we build the Field
 
     self.size = p**n #amount of elements, self.size-1 is the cap value of our field
+    self.cap = self.size - 1 #max element in field
     self.expLUT = [-1]*(2*(self.size-1)) #lookup table for exponentiation of an element: expLUT[i] = α^i (we initialize a list of length 2*(self.size-1) to not have "IndexError: list index out of range" troubles in the future)
     self.logLUT = [-1]*self.size #lookup table for logarithm of an element: logLUT[a^i] = i (defined only for values above 0)
 
@@ -36,7 +37,7 @@ class GaloisField: #Will represent finite fields (Z/p)[x]/f(x) (polynomials with
     if self.prime == 2:
       return x ^ y #assuming we are working with GF(2^n) subtraction is the same as addition
 
-  def standard_mul(self, x, y):
+  def standard_mul(self, x, y): #only for GF(2^n)
     result = 0
     while y > 0:
       if y & 1: #if y is odd
@@ -58,3 +59,9 @@ class GaloisField: #Will represent finite fields (Z/p)[x]/f(x) (polynomials with
     if x == 0: #zero divided by something
       return 0
     return self.expLUT[self.logLUT[x] - self.logLUT[y]] #x/y can be written as α^n/α^m = α^(n-m), where n and m are their log value
+
+  def pow(self, x, p):
+    return self.expLUT[(self.logLUT[x]*p) % self.cap]
+
+# clss = GaloisField()
+# print(clss.mul(54, 18))
