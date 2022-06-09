@@ -1,7 +1,17 @@
 class GaloisField: #Will represent finite fields (Z/p)[x]/f(x) (polynomials with coeficients from finite field Z/p (integers modulo p) modulo a prime polynomial f(x) of degree n) with size p^n written as GF(p^n)
-  def __init__(self, p=2, n=8, alpha=2, prim_poly=285): #for Reed-Solomon codes we use GF(2^8) with polynomials [b7*x^7 + b6*x^6 + b5*x^5 + b4*x^4 + b3*x^3 + b2*x^2 + b1*x^1 + b0] represented as binary numbers [b7 b6 b5 b4 b3 b2 b1 b0]
-    self.prime = p
-    self.power = n
+  def __init__(self, p: int=2, n: int=8, alpha: int=2, prim_poly: int=285) -> None: #for Reed-Solomon codes we use GF(2^8) with polynomials [b7*x^7 + b6*x^6 + b5*x^5 + b4*x^4 + b3*x^3 + b2*x^2 + b1*x^1 + b0] represented as binary numbers [b7 b6 b5 b4 b3 b2 b1 b0]
+    if self.is_prime(p): #returns False for non-prime and values < 2
+      if p > 2:
+        raise NotImplementedError("current GaloisField class only supports GF(2^n)") #functionality still not added
+      self.prime = p
+    else:
+      raise ValueError("enter a valid prime number")
+    
+    if n > 0:
+      self.power = n
+    else:
+      raise ValueError("enter a valid power (positive integer)")
+
     self.alpha = alpha #primitive element from which all other elements can be derived (example: GF(8) = {0, 1, α, α^2, α^3, α^4, α^5, α^6})
     self.prim_poly = prim_poly #an irreducible primitive polynomial with which we build the Field
 
@@ -18,7 +28,19 @@ class GaloisField: #Will represent finite fields (Z/p)[x]/f(x) (polynomials with
       self.logLUT[a] = i
       a = self.standard_mul(a, self.alpha) #α_i = α_(i-1)*α with α_0 = 1 | (1 -> α -> α^2 -> α^3...)
 
-  def add(self, x, y):
+  @staticmethod
+  def is_prime(x: int) -> bool: #O(sqrt(n)) algorithm for prime checking
+    if x < 2: #remove negative numbers, 0 and 1
+      return False
+    i = 2 #start at 2, since everything is divisible by 1
+    while i*i <= x: #every non-prime number x has at least 2 divisors (besides 1 and itself), if one is found the number is not prime. Therefore we can simply check up until sqrt(x), since higher than that and the number cannot have 2 divisors
+      if x % i == 0: #check if number is divisor
+        return False #if any divisor is found, the number is not prime
+      i += 1
+    return True #no divisors found
+
+
+  def add(self, x: int, y: int) -> int:
     if self.prime == 2:
       return x ^ y #assuming we are working with GF(2^n) (addition of polynomials works by adding coefficients with same degree (meaning no carry) and working in Z/2 is the same as modulo 2)
 
@@ -33,11 +55,11 @@ class GaloisField: #Will represent finite fields (Z/p)[x]/f(x) (polynomials with
     # new_x = new_x[::-1]
     # new_y = new_y[::-1]
 
-  def sub(self, x, y):
+  def sub(self, x: int, y: int) -> int:
     if self.prime == 2:
       return x ^ y #assuming we are working with GF(2^n) subtraction is the same as addition
 
-  def standard_mul(self, x, y): #only for GF(2^n)
+  def standard_mul(self, x: int, y: int) -> int: #only for GF(2^n)
     result = 0
     while y > 0:
       if y & 1: #if y is odd
@@ -48,19 +70,19 @@ class GaloisField: #Will represent finite fields (Z/p)[x]/f(x) (polynomials with
         x = self.add(x, self.prim_poly) #if x gets larger than 255 (assuming GF(2^8)) it means the polynomial it represents is degree 8 or higher and must be reduced by our primitive polynomial
     return result
 
-  def mul(self, x, y):
+  def mul(self, x: int, y: int) -> int:
     if x == 0 or y == 0: #multiplication by 0
       return 0
     return self.expLUT[self.logLUT[x] + self.logLUT[y]] #x*y can be written as α^n*α^m = α^(n+m), where n and m are their log values
 
-  def div(self, x, y):
+  def div(self, x: int, y: int) -> int:
     if y == 0: #division by 0
       raise ZeroDivisionError("cannot divide by zero")
     if x == 0: #zero divided by something
       return 0
     return self.expLUT[self.logLUT[x] - self.logLUT[y]] #x/y can be written as α^n/α^m = α^(n-m), where n and m are their log value
 
-  def pow(self, x, p):
+  def pow(self, x: int, p: int) -> int:
     return self.expLUT[(self.logLUT[x]*p) % self.cap]
 
 # clss = GaloisField()
