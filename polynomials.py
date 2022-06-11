@@ -1,9 +1,18 @@
-from typing import Iterable
+from typing import Iterable, Tuple
 
 class Polynomials:
   def __init__(self, field):
     self.field = field #the Galois Field from which the coefficients are taken from
     self.cap = field.size - 1 #cap value od coefficients
+
+  def eval(self, p: Iterable[int], x: int) -> int:
+    if not len(p): #preventing IndexError
+      raise ValueError("empty polynomial")
+
+    res = p[0] #first coefficient
+    for i in range(1, len(p)): #loop degree p times
+      res = self.field.add(self.field.mul(res, x), p[i]) #each loop multiply by x and add next coefficient
+    return res
 
   def add(self, p: Iterable[int], q: Iterable[int]) -> list[int]:
     for i in p: #input must be constrained by Galois Field, most likely 0-255
@@ -44,7 +53,7 @@ class Polynomials:
 
     return [self.field.mul(x, coeff) for coeff in p]
 
-  def monic_div(self, p: Iterable[int], q: Iterable[int]) -> list[int]: #expanded syntetic division with monic polynomials (expanded Horner's method) - https://en.wikipedia.org/wiki/Synthetic_division#Expanded_synthetic_division
+  def monic_div(self, p: Iterable[int], q: Iterable[int]) -> Tuple[list[int], list[int]]: #expanded syntetic division with monic polynomials (expanded Horner's method) - https://en.wikipedia.org/wiki/Synthetic_division#Expanded_synthetic_division
     for i in p: #input must be constrained by Galois Field, most likely 0-255
       if i > self.cap or i < 0:
         raise ValueError("coefficients of given polynomials do not fit the charachteristics of the field")
@@ -62,7 +71,7 @@ class Polynomials:
       for j in range(1, len(q)): #skip first coefficient as the divisor is assumed to always be monic (first coefficient is always 1)
         res[i + j] = self.field.sub(res[i + j], self.field.mul(q[j], res[i])) #add negated j-th coefficient of q multiplied by i-th coeffcient of res to positions right of i
     separation = len(q) - 1
-    return res[:-separation], res[-separation:]
+    return res[:-separation], res[-separation:] #quotient and remainder
 
 # clss = Polynomials(GaloisField())
 # print(clss.add([1, 255, 1], [2, 6]))
