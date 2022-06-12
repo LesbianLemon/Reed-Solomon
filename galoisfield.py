@@ -39,21 +39,9 @@ class GaloisField: #Will represent finite fields (Z/p)[x]/f(x) (polynomials with
       i += 1
     return True #no divisors found
 
-
   def add(self, x: int, y: int) -> int:
     if self.prime == 2:
       return x ^ y #assuming we are working with GF(2^n) (addition of polynomials works by adding coefficients with same degree (meaning no carry) and working in Z/2 is the same as modulo 2)
-
-    # new_x, new_y = [], []
-    # while x > 0 or y > 0:
-    #   x_digit = x % self.prime
-    #   y_digit = y % self.prime
-    #   if x_digit:
-    #     new_x.append(x_digit)
-    #   if y_digit:
-    #     new_y.append(y_digit)
-    # new_x = new_x[::-1]
-    # new_y = new_y[::-1]
 
   def sub(self, x: int, y: int) -> int:
     if self.prime == 2:
@@ -85,5 +73,9 @@ class GaloisField: #Will represent finite fields (Z/p)[x]/f(x) (polynomials with
   def pow(self, x: int, p: int) -> int:
     return self.expLUT[(self.logLUT[x]*p) % self.cap]
 
+  def inverse(self, x: int) -> int:
+    return self.expLUT[-self.logLUT[x]] #x^(-1) can be written as α^(-n), with n being the log value
+
 # clss = GaloisField()
 # print(clss.mul(54, 18))
+# print(clss.inverse(2))
