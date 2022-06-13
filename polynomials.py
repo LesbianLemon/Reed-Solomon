@@ -1,11 +1,19 @@
 from typing import Iterable, Tuple
 
 class Polynomials:
+  """
+  Holder class for operations on polynomials inside Galois Field.
+
+  The class must be provided with a Galois Field at initializaion.
+  """
   def __init__(self, field):
     self.field = field #the Galois Field from which the coefficients are taken from
     self.cap = field.size - 1 #cap value od coefficients
 
   def eval(self, p: Iterable[int], x: int) -> int:
+    """
+    Return an evaluation of the given polynomial 'p' for 'x'.
+    """
     if not len(p): #preventing IndexError
       raise ValueError("empty polynomial")
 
@@ -15,6 +23,9 @@ class Polynomials:
     return res
 
   def add(self, p: Iterable[int], q: Iterable[int]) -> list[int]:
+    """
+    Return a polynomial in list form (coefficients arranged from highest term to lowest) resulting from addition of 'p' with 'q'.
+    """
     for i in p: #input must be constrained by Galois Field, most likely 0-255
       if i > self.cap or i < 0:
         raise ValueError("coefficients of given polynomials do not fit the charachteristics of the field")
@@ -30,6 +41,9 @@ class Polynomials:
     return res
 
   def mul(self, p: Iterable[int], q: Iterable[int]) -> list[int]:
+    """
+    Return a polynomial in list form (coefficients arranged from highest term to lowest) resulting from multiplication of 'p' with 'q'.
+    """
     for i in p: #input must be constrained by Galois Field, most likely 0-255
       if i > self.cap or i < 0:
         raise ValueError("coefficients of given polynomials do not fit the charachteristics of the field")
@@ -45,6 +59,9 @@ class Polynomials:
     return res
 
   def scalar(self, p: Iterable[int], x: int) -> list[int]:
+    """
+    Return a polynomial in list form (coefficients arranged from highest term to lowest) resulting from multiplying the polynomial 'p' with a scalar 'x'.
+    """
     for i in p: #input must be constrained by Galois Field, most likely 0-255
       if i > self.cap or i < 0:
         raise ValueError("coefficients of given polynomials do not fit the charachteristics of the field")
@@ -54,6 +71,9 @@ class Polynomials:
     return [self.field.mul(x, coeff) for coeff in p]
 
   def monic_div(self, p: Iterable[int], q: Iterable[int]) -> Tuple[list[int], list[int]]: #expanded syntetic division with monic polynomials (expanded Horner's method) - https://en.wikipedia.org/wiki/Synthetic_division#Expanded_synthetic_division
+    """
+    Return a tuple of polynomials in list form (coefficients arranged from highest term to lowest), the result and remainder, resulting from division of 'p' with a monic polynomial 'q'.
+    """
     for i in p: #input must be constrained by Galois Field, most likely 0-255
       if i > self.cap or i < 0:
         raise ValueError("coefficients of given polynomials do not fit the charachteristics of the field")
