@@ -113,8 +113,3 @@ class GaloisField: #Will represent finite fields (Z/p)[x]/f(x) (polynomials with
     Return 1/x in the Galois Field.
     """
     return self.expLUT[-self.logLUT[x]] #x^(-1) can be written as α^(-n), with n being the log value
-
-# clss = GaloisField()
-# print(clss.mul(45, 216))
-# print(clss.mul(54, 18))
-# print(clss.inverse(2))

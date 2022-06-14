@@ -10,6 +10,17 @@ class Polynomials:
     self.field = field #the Galois Field from which the coefficients are taken from
     self.cap = field.size - 1 #cap value od coefficients
 
+  def shorten(self, p: Iterable[int]) -> list[int]:
+    """
+    Return a polynomial in list form (coefficients arranged from highest term to lowest) without the leading 0 coefficients.
+    """
+    res = list(p) #copy the Iterable
+    for i in range(len(p)):
+      if p[i] != 0 or i == len(p)-1: #when a non-zero coefficient is found or at end of polynomial return it along with its leading coefficients
+        res = res[i:]
+        break
+    return res
+
   def eval(self, p: Iterable[int], x: int) -> int:
     """
     Return an evaluation of the given polynomial 'p' for 'x'.
@@ -83,17 +94,16 @@ class Polynomials:
 
     if len(q) and q[0] != 1: #function only works with monic divisors (highest term coefficient must be 1)
       raise ValueError("given divisor is not monic")
-    if len(p) < len(q):
-      raise ValueError("given divisor is higher degree than dividend")
+
+    if q == [1]:
+      return p, [0] #everything is divisible by 1, but it breaks this algorithm
 
     res = p.copy()
     for i in range(len(p) - (len(q) - 1)): #expanded syntetic division has (degree p - (degree q - 1)) steps, since (degree q - 1) is the maximum degree of the remainder. The coefficients of higher degree parts can always be removed via division
       for j in range(1, len(q)): #skip first coefficient as the divisor is assumed to always be monic (first coefficient is always 1)
         res[i + j] = self.field.sub(res[i + j], self.field.mul(q[j], res[i])) #add negated j-th coefficient of q multiplied by i-th coeffcient of res to positions right of i
-    separation = len(q) - 1
-    return res[:-separation], res[-separation:] #quotient and remainder
 
-# clss = Polynomials(GaloisField())
-# print(clss.add([1, 255, 1], [2, 6]))
-# print(clss.mul([1, 0, 2, 0], [1, 255, 3]))
-# print(clss.scalar([1, 2, 3, 0, 1, 2, 3], 500))
+    separation = len(q) - 1 #separator for quotient and remainder using extended Horner's method
+    quotient = self.shorten(res[:-separation]) if len(p) >= len(q) else [0]
+    remainder = self.shorten(res[-separation:])
+    return quotient, remainder
